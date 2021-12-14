@@ -10,7 +10,6 @@ extern "C"
 FIFO_TS fifo;
 uint8_t fifoBuffer[16];
 
-
 TEST_GROUP(fifo)
 {
     void setup()

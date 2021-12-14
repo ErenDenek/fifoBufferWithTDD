@@ -2,11 +2,13 @@
 
 extern "C"
 {
-    #include "fifobufer.h"
+#include "fifobufer.h"
+#include <stdio.h>
+#include <stdint.h>
+#include <stdbool.h>
 }
 
 #if RELEASE == 1
-#include <iostream>
 
 #define USER_CMD_FIFO_BUFFER_SIZE  1024
 
@@ -15,8 +17,28 @@ uint8_t userCMDFifoBuffer[USER_CMD_FIFO_BUFFER_SIZE];
 
 int main()
 {
+    uint8_t readingDataU8 = 0;
+
     fifoCreate(&userCMDFifo, userCMDFifoBuffer, sizeof(userCMDFifoBuffer), sizeof(userCMDFifoBuffer[0]));
-    std::cout << "ereh";
+
+    if( true == fifoWrite(&userCMDFifo, 0x10))
+    {
+        printf("Writing is successful\n");
+    }
+    else{
+        printf("Writing is not successful\n");
+    }
+
+    if( true == fifoRead(&userCMDFifo, &readingDataU8))
+    {
+        printf("Reading is successful\t");
+        printf("Reading data : %d\n", readingDataU8);
+    }
+    else{
+        printf("Reading is not successful\n");
+    }
+
+
     return 0;
 }
 

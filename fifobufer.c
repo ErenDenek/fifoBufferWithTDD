@@ -39,7 +39,6 @@ bool fifoRead(FIFO_TS *const self, void *readData)
     {
         memcpy(readData, (void *)&self->buffer[self->tail], self->bufferTypeSize);
         increaseTail(self);
-
         return 1;
     }
     else{
