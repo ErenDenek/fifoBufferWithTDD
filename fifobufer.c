@@ -38,13 +38,9 @@ bool fifoWrite(FIFO_TS *const self, const uint64_t data)
 
 bool fifoRead(FIFO_TS *self, void *readData)
 {
-    uint16_t test = 0;
-
     if( isEmpty(self) == false )
     {
         memcpy(readData, (void *)&self->buffer[self->tail], self->bufferTypeSize);
-        memcpy(&test, (void *)&self->buffer[self->tail], self->bufferTypeSize);
-        //printf("u16 test %d\n",test);
         increaseTail(self);
         return 1;
     }
@@ -60,7 +56,7 @@ uint16_t getFreeSpace(FIFO_TS *const self)
 
 bool isEmpty(FIFO_TS *const self)
 {
-    if( self->freeSpace == self->bufferSize )
+    if( getFreeSpace(self) == self->bufferSize )
     {
         return true;
     }
@@ -71,7 +67,7 @@ bool isEmpty(FIFO_TS *const self)
 
 bool isFull(FIFO_TS *const self)
 {
-    if( self->freeSpace == 0 ){
+    if( getFreeSpace(self) - 1 == 0 ){
         return true;
     }else{
         return false;

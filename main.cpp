@@ -22,7 +22,7 @@ uint16_t ATCMDFifoBuffer[AT_CMD_FIFO_BUFFER_SIZE];
 int main()
 {
     uint8_t readingDataU8 = 0;
-    uint8_t readingDataU16 = 0;
+    uint16_t readingDataU16 = 0;
 
     fifoCreate(&userCMDFifo, userCMDFifoBuffer, sizeof(userCMDFifoBuffer), sizeof(userCMDFifoBuffer[0]));
     fifoCreate(&ATCMDFifo, ATCMDFifoBuffer, sizeof(ATCMDFifoBuffer), sizeof(ATCMDFifoBuffer[0]));
@@ -63,6 +63,20 @@ int main()
         printf("Reading is not successful\n");
     }
 
+    static int i = 0;
+
+    i = 0;
+    while( fifoWrite(&ATCMDFifo, i) == true )
+    {
+        i++;
+    }
+
+    i = 0;
+    while( fifoRead(&ATCMDFifo, &readingDataU16) == true )
+    {
+        i++;
+        printf("Index : %d, Data : %d\n", i, readingDataU16 );
+    }
 
     return 0;
 }
