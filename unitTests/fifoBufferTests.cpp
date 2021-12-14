@@ -1,20 +1,23 @@
 #include <CppUTest/TestHarness.h>
-#include <iostream>
 
-using namespace std;
 extern "C"
 {
-    #include "fifobufer.h"
+#include "fifobufer.h"
+#include "stdio.h"
 }
 
-FIFO_TS fifo;
-uint8_t fifoBuffer[16];
+FIFO_TS fifoU8;
+uint8_t fifoBufferU8[16];
+
+FIFO_TS fifoU16;
+uint16_t fifoBufferU16[32];
 
 TEST_GROUP(fifo)
 {
     void setup()
     {
-        fifoCreate(&fifo, fifoBuffer, sizeof (fifoBuffer), sizeof (fifoBuffer[0]));
+        fifoCreate(&fifoU8, fifoBufferU8, sizeof (fifoBufferU8)/sizeof(fifoBufferU8[0]), sizeof (fifoBufferU8[0]));
+        fifoCreate(&fifoU16, fifoBufferU16, sizeof (fifoBufferU16)/sizeof (fifoBufferU16[0]), sizeof (fifoBufferU16[0]));
     }
     void teardown()
     {
@@ -24,90 +27,167 @@ TEST_GROUP(fifo)
 
 TEST(fifo, fifoCreatedControl)
 {
-    CHECK_EQUAL( sizeof (fifoBuffer), getFreeSpace(&fifo));
-    CHECK_EQUAL( false ,isFull(&fifo));
-    CHECK_EQUAL( true ,isEmpty(&fifo));
-    CHECK_EQUAL( 16, getFreeSpace(&fifo));
+    CHECK_EQUAL( sizeof (fifoBufferU8)/sizeof(fifoBufferU8[0]), fifoU8.bufferSize);
+    CHECK_EQUAL( false ,isFull(&fifoU8));
+    CHECK_EQUAL( true ,isEmpty(&fifoU8));
+    CHECK_EQUAL( 16, getFreeSpace(&fifoU8));
+
+    CHECK_EQUAL( sizeof (fifoBufferU16)/sizeof (fifoBufferU16[0]), fifoU16.bufferSize);
+    CHECK_EQUAL( false ,isFull(&fifoU16));
+    CHECK_EQUAL( true ,isEmpty(&fifoU16));
+    CHECK_EQUAL( 32, getFreeSpace(&fifoU16));
 }
 
 TEST(fifo, fifoSingleWriteAndRead)
 {
-    uint8_t data = 0;
+    uint8_t dataU8 = 0;
 
-    fifoWrite(&fifo, 10);
-    fifoRead(&fifo, &data);
+    fifoWrite(&fifoU8, 10);
+    fifoRead(&fifoU8, &dataU8);
 
-    CHECK_EQUAL(10, data);
-    CHECK_EQUAL( false ,isFull(&fifo));
-    CHECK_EQUAL( true ,isEmpty(&fifo));
-    CHECK_EQUAL( 16, getFreeSpace(&fifo));
+    CHECK_EQUAL(10, dataU8);
+    CHECK_EQUAL( false ,isFull(&fifoU8));
+    CHECK_EQUAL( true ,isEmpty(&fifoU8));
+    CHECK_EQUAL( 16, getFreeSpace(&fifoU8));
+
+    uint8_t dataU16 = 0;
+
+    fifoWrite(&fifoU16, 10);
+    fifoRead(&fifoU16, &dataU16);
+
+    CHECK_EQUAL(10, dataU8);
+    CHECK_EQUAL( false ,isFull(&fifoU16));
+    CHECK_EQUAL( true ,isEmpty(&fifoU16));
+    CHECK_EQUAL( 32, getFreeSpace(&fifoU16));
 }
 
 TEST(fifo, fifoIsEmpty)
 {
-    uint8_t data;
+    uint8_t dataU8;
 
-    fifoWrite(&fifo, 10);
-    CHECK_EQUAL(0, isEmpty(&fifo));
+    fifoWrite(&fifoU8, 10);
+    CHECK_EQUAL(0, isEmpty(&fifoU8));
 
-    fifoRead(&fifo, &data);
-    CHECK_EQUAL(1, isEmpty(&fifo));
+    fifoRead(&fifoU8, &dataU8);
+    CHECK_EQUAL(1, isEmpty(&fifoU8));
+
+    uint8_t dataU16;
+
+    fifoWrite(&fifoU16, 10);
+    CHECK_EQUAL(0, isEmpty(&fifoU16));
+
+    fifoRead(&fifoU16, &dataU16);
+    CHECK_EQUAL(1, isEmpty(&fifoU16));
 }
 
 TEST(fifo, fifoIsFull)
 {
-    fifoWrite(&fifo, 10);
-    CHECK_EQUAL(0, isFull(&fifo));
+    fifoWrite(&fifoU8, 10);
+    CHECK_EQUAL(0, isFull(&fifoU8));
+
+    fifoWrite(&fifoU16, 10);
+    CHECK_EQUAL(0, isFull(&fifoU16));
 
 }
 
 TEST(fifo, fifoFillAllBufferAfterFifoIsFull)
 {
-    for(uint16_t i = 0; i < fifo.bufferSize; i++ )
+    while( getFreeSpace(&fifoU8) - 1 != 0 )
     {
-        fifoWrite(&fifo, i);
-        cout << fifoBuffer[i] << "\n";
+        static int i = 0;
+        fifoWrite( &fifoU8, i++ );
     }
 
-    CHECK_EQUAL( false ,fifoWrite(&fifo, 10));
+    CHECK_EQUAL( false ,fifoWrite(&fifoU8, 10));
+
+    while( getFreeSpace(&fifoU16) - 1 != 0 )
+    {
+        static int i = 0;
+        fifoWrite( &fifoU16, i++ );
+    }
+
+    CHECK_EQUAL( false ,fifoWrite(&fifoU16, 10));
 }
 
 TEST(fifo, fifoReadingFromFullBuffer)
 {
-    uint8_t data = 0;
+    uint8_t dataU8 = 0;
 
-    for(uint16_t i = 0; i < fifo.bufferSize; i++ )
+    while( getFreeSpace(&fifoU8) - 1 != 0 )
     {
-        fifoWrite(&fifo, i);
-        cout << fifoBuffer[i] << "\n";
+        static int i = 0;
+        fifoWrite( &fifoU8, i++ );
     }
 
-    fifoRead(&fifo, &data);
+    fifoRead(&fifoU8, &dataU8);
 
-    CHECK_EQUAL( false ,isFull(&fifo));
-    CHECK_EQUAL( false ,isEmpty(&fifo));
+    CHECK_EQUAL( false ,isFull(&fifoU8));
+    CHECK_EQUAL( false ,isEmpty(&fifoU8));
+
+    uint8_t dataU16 = 0;
+
+    while( getFreeSpace(&fifoU16) - 1 != 0 )
+    {
+        static int i = 0;
+        fifoWrite( &fifoU16, i++ );
+    }
+
+    fifoRead(&fifoU16, &dataU16);
+
+    CHECK_EQUAL( false ,isFull(&fifoU16));
+    CHECK_EQUAL( false ,isEmpty(&fifoU16));
 }
 
 TEST(fifo, fifoFullWriteAfterFullRead)
 {
-    uint8_t data = 0;
+    uint8_t dataU8 = 0;
 
-    for(uint16_t i = 0; i < fifo.bufferSize; i++ )
+    while( getFreeSpace(&fifoU8) - 1 != 0 )
     {
-        fifoWrite(&fifo, i);
+        static int i = 0;
+        fifoWrite(&fifoU8, i++);
     }
 
-    CHECK_EQUAL( true ,isFull(&fifo));
-    CHECK_EQUAL( false ,isEmpty(&fifo));
-    CHECK_EQUAL( 0, getFreeSpace(&fifo));
+    CHECK_EQUAL( true ,isFull(&fifoU8));
+    CHECK_EQUAL( false ,isEmpty(&fifoU8));
+    CHECK_EQUAL( 0, getFreeSpace(&fifoU8) - 1);
 
-    for(uint16_t i = 0; i < fifo.bufferSize; i++ )
+    while( getFreeSpace(&fifoU16) - 1 != 0 )
     {
-        fifoRead(&fifo, &data);
-        CHECK_EQUAL(i, data);
+        static int i = 0;
+        fifoRead(&fifoU8, &dataU8);
+
+        CHECK_EQUAL(i, dataU8);
+        i++;
     }
 
-    CHECK_EQUAL( false ,isFull(&fifo));
-    CHECK_EQUAL( true ,isEmpty(&fifo));
-    CHECK_EQUAL( 16, getFreeSpace(&fifo));
+    CHECK_EQUAL( false ,isFull(&fifoU8));
+    CHECK_EQUAL( true ,isEmpty(&fifoU8));
+    CHECK_EQUAL( 16, getFreeSpace(&fifoU8));
+
+    uint16_t dataU16 = 0;
+
+    while( getFreeSpace(&fifoU16) - 1 != 0 )
+    {
+        static int i = 0;
+        fifoWrite(&fifoU16, i++);
+    }
+
+    CHECK_EQUAL( true ,isFull(&fifoU16));
+    CHECK_EQUAL( false ,isEmpty(&fifoU16));
+    CHECK_EQUAL( 0, getFreeSpace(&fifoU16));
+
+    while( getFreeSpace(&fifoU16) - 1 != 0 )
+    {
+        static int i = 0;
+        fifoRead(&fifoU16, &dataU16);
+
+        CHECK_EQUAL(i, dataU16);
+        i++;
+    }
+
+    CHECK_EQUAL( false ,isFull(&fifoU16));
+    CHECK_EQUAL( true ,isEmpty(&fifoU16));
+    CHECK_EQUAL( 32, getFreeSpace(&fifoU16));
 }
+

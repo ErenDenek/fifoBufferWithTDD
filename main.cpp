@@ -10,17 +10,24 @@ extern "C"
 
 #if RELEASE == 1
 
-#define USER_CMD_FIFO_BUFFER_SIZE  1024
+#define USER_CMD_FIFO_BUFFER_SIZE   ( 1024 )
+#define AT_CMD_FIFO_BUFFER_SIZE     ( 512 )
 
 FIFO_TS userCMDFifo;
 uint8_t userCMDFifoBuffer[USER_CMD_FIFO_BUFFER_SIZE];
 
+FIFO_TS ATCMDFifo;
+uint16_t ATCMDFifoBuffer[AT_CMD_FIFO_BUFFER_SIZE];
+
 int main()
 {
     uint8_t readingDataU8 = 0;
+    uint8_t readingDataU16 = 0;
 
     fifoCreate(&userCMDFifo, userCMDFifoBuffer, sizeof(userCMDFifoBuffer), sizeof(userCMDFifoBuffer[0]));
+    fifoCreate(&ATCMDFifo, ATCMDFifoBuffer, sizeof(ATCMDFifoBuffer), sizeof(ATCMDFifoBuffer[0]));
 
+    /* Uint8_t Example */
     if( true == fifoWrite(&userCMDFifo, 0x10))
     {
         printf("Writing is successful\n");
@@ -33,6 +40,24 @@ int main()
     {
         printf("Reading is successful\t");
         printf("Reading data : %d\n", readingDataU8);
+    }
+    else{
+        printf("Reading is not successful\n");
+    }
+
+    /* Uint16_t Example */
+    if( true == fifoWrite(&ATCMDFifo, 300))
+    {
+        printf("Writing is successful\n");
+    }
+    else{
+        printf("Writing is not successful\n");
+    }
+
+    if( true == fifoRead(&ATCMDFifo, &readingDataU16))
+    {
+        printf("Reading is successful\t");
+        printf("Reading data : %d\n", readingDataU16);
     }
     else{
         printf("Reading is not successful\n");

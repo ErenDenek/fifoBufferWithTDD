@@ -1,9 +1,10 @@
 #include "fifobufer.h"
+#include <stdio.h>
 
 static void increaseTail(FIFO_TS *const self);
 static void increaseHead(FIFO_TS *const self);
 
-void fifoCreate(FIFO_TS *self, void* buffer, uint16_t bufferSize, uint8_t bufferTypeSize)
+void fifoCreate(FIFO_TS *const self, void *const buffer, const uint16_t bufferSize, const uint8_t bufferTypeSize)
 {
     self->buffer = buffer;
 
@@ -15,17 +16,19 @@ void fifoCreate(FIFO_TS *self, void* buffer, uint16_t bufferSize, uint8_t buffer
 
     self->tail = 0;
 
-    self->freeSpace = bufferSize;
+    self->freeSpace = bufferSize - 1;
 }
 
-bool fifoWrite(FIFO_TS *self, const uint64_t data)
+bool fifoWrite(FIFO_TS *const self, const uint64_t data)
 {
-    uint64_t temp = data;
+    static uint64_t temp = 0;
+    temp = data;
 
     if( isFull(self) == false )
     {
         memcpy((void *)&self->buffer[self->head], &temp, self->bufferTypeSize);
         increaseHead(self);
+
         return true;
     }
     else{
@@ -33,11 +36,15 @@ bool fifoWrite(FIFO_TS *self, const uint64_t data)
     }
 }
 
-bool fifoRead(FIFO_TS *const self, void *readData)
+bool fifoRead(FIFO_TS *self, void *readData)
 {
+    uint16_t test = 0;
+
     if( isEmpty(self) == false )
     {
         memcpy(readData, (void *)&self->buffer[self->tail], self->bufferTypeSize);
+        memcpy(&test, (void *)&self->buffer[self->tail], self->bufferTypeSize);
+        //printf("u16 test %d\n",test);
         increaseTail(self);
         return 1;
     }
@@ -48,10 +55,10 @@ bool fifoRead(FIFO_TS *const self, void *readData)
 
 uint16_t getFreeSpace(FIFO_TS *const self)
 {
-    return self->freeSpace;
+    return self->freeSpace + 1;
 }
 
-bool isEmpty(FIFO_TS *self)
+bool isEmpty(FIFO_TS *const self)
 {
     if( self->freeSpace == self->bufferSize )
     {
@@ -62,7 +69,7 @@ bool isEmpty(FIFO_TS *self)
     }
 }
 
-bool isFull(FIFO_TS *self)
+bool isFull(FIFO_TS *const self)
 {
     if( self->freeSpace == 0 ){
         return true;
@@ -74,9 +81,9 @@ bool isFull(FIFO_TS *self)
 static void increaseTail(FIFO_TS *const self)
 {
     self->tail += self->bufferTypeSize;
-    self->freeSpace += self->bufferTypeSize;
+    self->freeSpace++;
 
-    if( self->tail == self->bufferSize )
+    if( self->tail == (self->bufferSize * self->bufferTypeSize) )
     {
         self->tail = 0;
     }
@@ -85,9 +92,9 @@ static void increaseTail(FIFO_TS *const self)
 static void increaseHead(FIFO_TS *const self)
 {
     self->head += self->bufferTypeSize;
-    self->freeSpace -= self->bufferTypeSize;
+    self->freeSpace--;
 
-    if( self->head == self->bufferSize )
+    if( self->head == (self->bufferSize * self->bufferTypeSize) )
     {
         self->head = 0;
     }
