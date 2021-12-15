@@ -1,5 +1,4 @@
 #include "fifobuffer.h"
-#include <stdio.h>
 
 static void increaseTail(FIFO_TS *const self);
 static void increaseHead(FIFO_TS *const self);
