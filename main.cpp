@@ -2,7 +2,7 @@
 
 extern "C"
 {
-#include "fifobufer.h"
+#include "fifobuffer.h"
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -28,7 +28,7 @@ int main()
     fifoCreate(&ATCMDFifo, ATCMDFifoBuffer, sizeof(ATCMDFifoBuffer), sizeof(ATCMDFifoBuffer[0]));
 
     /* Uint8_t Example */
-    if( true == fifoWrite(&userCMDFifo, 0x10))
+    if( true == fifoWrite(&userCMDFifo, 16))
     {
         printf("Writing is successful\n");
     }

@@ -4,14 +4,14 @@ CONFIG -= app_bundle
 CONFIG -= qt
 
 SOURCES += \
-        fifobufer.c \
+        fifobuffer.c \
         main.cpp \
         unitTests/fifoBufferTests.cpp
 
 
 
 HEADERS += \
-    fifobufer.h \
+    fifobuffer.h \
     globals.h
 
 
