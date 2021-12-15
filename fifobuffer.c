@@ -36,7 +36,7 @@ bool fifoWrite(FIFO_TS *const self, const uint64_t data)
     }
 }
 
-bool fifoRead(FIFO_TS *self, void *readData)
+bool fifoRead(FIFO_TS *const self, void *readData)
 {
     if( fifoIsEmpty(self) == false )
     {
